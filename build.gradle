@@ -1,0 +1,48 @@
+plugins {
+    id "fabric-loom" version "1.15-SNAPSHOT"
+    id "legacy-looming" version "1.15-SNAPSHOT"
+}
+
+version = "$mod_version+$minecraft_target"
+group = maven_group
+
+loom {
+    runs.client.programArgs "--userProperties", "{}"
+}
+
+base {
+    //noinspection GrDeprecatedAPIUsage
+    archivesName = project.archives_base_name
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:$minecraft_version"
+    include(implementation("it.unimi.dsi:fastutil:8.2.2"))
+    mappings(legacy.yarn(minecraft_version, yarn_build))
+    modImplementation "net.fabricmc:fabric-loader:$loader_version"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    it.options.release.set(8)
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${base.archivesName.get()}" }
+    }
+}
