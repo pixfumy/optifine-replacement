@@ -4,7 +4,9 @@
   "package": "net.pixfumy.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MinecraftClientMixin"
+    "LongObjectStorageMixin",
+    "MinecraftClientMixin",
+    "TextRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
