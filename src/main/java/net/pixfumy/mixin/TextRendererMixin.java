@@ -65,14 +65,17 @@ public abstract class TextRendererMixin {
         }
     }
 
+    /**
+     * Due to the quirks of unicode combining characters, stick to rendering unicode strings char-by-char
+     */
     @Inject(method = "method_952", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawLayerUnicode(CZ)F"))
     private void switchFontToUnicode(int c, char bl, boolean par3, CallbackInfoReturnable<Float> cir) {
         if (-1 != lastCharType) {
-            Tessellator tessellator = Tessellator.INSTANCE;
-            tessellator.end();
-            tessellator.begin();
             this.lastCharType = -1;
         }
+        Tessellator tessellator = Tessellator.INSTANCE;
+        tessellator.end();
+        tessellator.begin();
     }
 
     /**
@@ -115,7 +118,8 @@ public abstract class TextRendererMixin {
 
     /**
      * @author pixfumy
-     * @reason
+     * @reason Draw the character as part of the batched tessellation instead of using GL immediate mode (slow),
+     * optimize the math operations since we know characterIndex is always positive
      */
     @Overwrite
     private float drawLayerUnicode(char character, boolean italic) {
@@ -128,8 +132,8 @@ public abstract class TextRendererMixin {
         int n3 = this.glyphWidths[character] & 0xF;
         float f = n2;
         float f2 = n3 + 1;
-        float f3 = (float)(character % 16 * 16) + f;
-        float f4 = (character & 0xFF) / 16 * 16;
+        float f3 = (float)((character & 15) << 4) + f;
+        float f4 = (character & 0xF0);
         float f5 = f2 - f - 0.02f;
         float f6 = italic ? 1.0f : 0.0f;
 
@@ -137,19 +141,9 @@ public abstract class TextRendererMixin {
 
         tessellator.vertex(this.x + f6, this.y, 0.0f, f3 / 256.0f, f4 / 256.0f);
         tessellator.vertex(this.x - f6, this.y + 7.99f, 0.0f, f3 / 256.0f, (f4 + 15.98f) / 256.0f);
-        tessellator.vertex(this.x + f5 / 2.0f + f6, this.y, 0.0f, (f3 + f5) / 256.0f, f4 / 256.0f);
         tessellator.vertex(this.x + f5 / 2.0f - f6, this.y + 7.99f, 0.0f, (f3 + f5) / 256.0f, (f4 + 15.98f) / 256.0f);
+        tessellator.vertex(this.x + f5 / 2.0f + f6, this.y, 0.0f, (f3 + f5) / 256.0f, f4 / 256.0f);
 
-//        GL11.glBegin(5);
-//        GL11.glTexCoord2f(f3 / 256.0f, f4 / 256.0f);
-//        GL11.glVertex3f(this.x + f6, this.y, 0.0f);
-//        GL11.glTexCoord2f(f3 / 256.0f, (f4 + 15.98f) / 256.0f);
-//        GL11.glVertex3f(this.x - f6, this.y + 7.99f, 0.0f);
-//        GL11.glTexCoord2f((f3 + f5) / 256.0f, f4 / 256.0f);
-//        GL11.glVertex3f(this.x + f5 / 2.0f + f6, this.y, 0.0f);
-//        GL11.glTexCoord2f((f3 + f5) / 256.0f, (f4 + 15.98f) / 256.0f);
-//        GL11.glVertex3f(this.x + f5 / 2.0f - f6, this.y + 7.99f, 0.0f);
-//        GL11.glEnd();
         return (f2 - f) / 2.0f + 1.0f;
     }
 }
