@@ -4,9 +4,13 @@
   "package": "net.pixfumy.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
+    "render.block.CarpetBlockMixin",
+    "render.block.SnowLayerBlockMixin",
     "LongObjectStorageMixin",
     "MinecraftClientMixin",
-    "TextRendererMixin"
+    "TextRendererMixin",
+    "WorldRendererMixin",
+    "profiler.BlockRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
